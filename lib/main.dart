@@ -384,9 +384,10 @@ class _UploadState extends State<Upload> {
 class Message extends StatefulWidget {
   String name;
   String author;
+  String docs;
   var vote;
 
-  Message({Key key, this.name, this.author, this.vote});
+  Message({Key key, this.name, this.author, this.vote, this.docs});
 
   @override
   _MessageState createState() => _MessageState();
@@ -409,8 +410,14 @@ class _MessageState extends State<Message> {
   }
 
   _upVote() async {
-    var document = await FirebaseFirestore.instance.collection('images').doc(
-        widget.name);
+    var document;
+    if(widget.docs == null) {
+       document = await FirebaseFirestore.instance.collection('images').doc(
+          widget.name);
+    }
+    else{
+       document = await FirebaseFirestore.instance.collection('subs').doc(widget.docs).collection('images').doc(widget.name);
+    }
     document.update({
       "vote": widget.vote + 1
     });
@@ -421,8 +428,14 @@ class _MessageState extends State<Message> {
   }
 
   _downVote() async {
-    var document = await FirebaseFirestore.instance.collection('images').doc(
-        widget.name);
+    var document;
+    if(widget.docs == null){
+      document = await FirebaseFirestore.instance.collection('images').doc(
+          widget.name);
+    }
+    else{
+      document = await FirebaseFirestore.instance.collection('subs').doc(widget.docs).collection('images').doc(widget.name);
+    }
     document.update({
       "vote": widget.vote - 1
     });
@@ -650,7 +663,9 @@ class _SubShowState extends State<SubShow> {
                       ),
                       new Message(name: document.data()['name'],
                           author: document.data()['author'],
-                          vote: document.data()['vote']),
+                          vote: document.data()['vote'],
+                          docs: widget.name,
+                      ),
                     ],
                   );
                 }).toList(),
